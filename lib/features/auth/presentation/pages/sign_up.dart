@@ -27,6 +27,7 @@ class _SignUpPageState extends State<SignUpPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(),
       body: Padding(
         padding: const EdgeInsets.all(15.0),
         child: Form(
@@ -49,7 +50,7 @@ class _SignUpPageState extends State<SignUpPage> {
               const SizedBox(height: 15),
               GestureDetector(
                 onTap: () {
-                  Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const LoginPage()));
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => const LoginPage()));
                 },
                 child: RichText(
                   text: TextSpan(
