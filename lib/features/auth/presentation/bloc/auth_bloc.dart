@@ -13,6 +13,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     : _userSignUp = userSignUp,
       super(AuthInitial()) {
     on<AuthSignUp>((event, emit) async{
+      emit(AuthLoading());
       print('🔵 [AuthBloc] AuthSignUp event received');
       print('🔵 [AuthBloc] Email: ${event.email}, Name: ${event.name}');
       

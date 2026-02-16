@@ -7,5 +7,5 @@ class User {
     required this.id,
     required this.email,
     required this.name
-  })
-}
+  });
+} 
