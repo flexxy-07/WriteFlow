@@ -1,3 +1,4 @@
+import 'package:blog_app/features/auth/domain/entities/user.dart';
 import 'package:blog_app/features/auth/domain/usecases/user_sign_up.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -12,6 +13,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     : _userSignUp = userSignUp,
       super(AuthInitial()) {
     on<AuthSignUp>((event, emit) async{
+      print('🔵 [AuthBloc] AuthSignUp event received');
+      print('🔵 [AuthBloc] Email: ${event.email}, Name: ${event.name}');
+      
       final res =  await _userSignUp(
         UserSignUpParams(
           name: event.name,
@@ -20,7 +24,17 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         ),
       );
 
-      res.fold((l) => emit(AuthFailure(message : l.message)), (r) => emit(AuthSuccess(message: r)));
+      print('🔵 [AuthBloc] UseCase returned result');
+      res.fold(
+        (failure) {
+          print('❌ [AuthBloc] Failure: ${failure.message}');
+          emit(AuthFailure(message: failure.message));
+        }, 
+        (user) {
+          print('✅ [AuthBloc] Success! User ID: ${user.id}');
+          emit(AuthSuccess(user: user));
+        }
+      );
     });
   }
 }

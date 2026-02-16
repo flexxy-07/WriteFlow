@@ -1,14 +1,15 @@
 import 'package:blog_app/core/error/exceptions.dart';
+import 'package:blog_app/features/auth/data/models/user_model.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 abstract interface class AuthRemoteDataSource {
-  Future<String> signUpWithEmailPassword({
+  Future<UserModel> signUpWithEmailPassword({
     required String name,
     required String email,
     required String password,
   });
 
-  Future<String> logInWithEmailPassword({
+  Future<UserModel> logInWithEmailPassword({
     required String email,
     required String password,
   });
@@ -18,7 +19,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   final SupabaseClient supabaseClient;
   AuthRemoteDataSourceImpl(this.supabaseClient);
   @override
-  Future<String> logInWithEmailPassword({
+  Future<UserModel> logInWithEmailPassword({
     required String email,
     required String password,
   }) async {
@@ -27,19 +28,22 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     if(response.user == null){
       throw ServerException('User is null');
     }
-    return response.user!.id;
+    return UserModel.fromJson(response.user!.toJson());
     }catch(e){
       throw ServerException(e.toString());
     }
   }
 
   @override
-  Future<String> signUpWithEmailPassword({
+  Future<UserModel> signUpWithEmailPassword({
     required String name,
     required String email,
     required String password,
   }) async {
     try {
+      print('🔐 [DataSource] Starting signup for email: $email');
+      print('🔐 [DataSource] User name: $name');
+      
        final response = await supabaseClient.auth.signUp(
          email: email,
          password: password,
@@ -47,11 +51,31 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
           'name' : name
          }
        );
+       
+       print('🔐 [DataSource] Signup response received');
+       print('🔐 [DataSource] Response user: ${response.user}');
+       print('🔐 [DataSource] User ID: ${response.user?.id}');
+       print('🔐 [DataSource] User email: ${response.user?.email}');
+       
        if(response.user == null){
+        print('❌ [DataSource] ERROR: User is null after signup');
         throw ServerException('User is null');
        }
-       return response.user!.id;
+       print('✅ [DataSource] User created successfully with ID: ${response.user!.id}');
+       return UserModel.fromJson(response.user!.toJson());
+    }on AuthApiException catch(e){
+      print('❌ [DataSource] AuthApiException caught: ${e.message}');
+      print('❌ [DataSource] Status Code: ${e.statusCode}');
+      print('❌ [DataSource] Code: ${e.code}');
+      
+      // Check if it's a rate limit error but user was still created
+      if(e.statusCode == '429' || e.code == 'over_email_send_rate_limit'){
+        print('⚠️ [DataSource] Email rate limit exceeded - User may still be created in database');
+      }
+      
+      throw ServerException('${e.message} (Status: ${e.statusCode})');
     }catch(e){
+      print('❌ [DataSource] Exception caught: $e');
       throw ServerException(e.toString());
     }
   }
