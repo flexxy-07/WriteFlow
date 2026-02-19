@@ -3,6 +3,7 @@ import 'package:blog_app/features/auth/data/models/user_model.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 abstract interface class AuthRemoteDataSource {
+  Session? get currentUserSession;
   Future<UserModel> signUpWithEmailPassword({
     required String name,
     required String email,
@@ -13,11 +14,17 @@ abstract interface class AuthRemoteDataSource {
     required String email,
     required String password,
   });
+
+  Future<UserModel?> getCurrentUserData();
 }
 
 class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   final SupabaseClient supabaseClient;
   AuthRemoteDataSourceImpl(this.supabaseClient);
+
+  @override
+  Session? get currentUserSession => supabaseClient.auth.currentSession;
+
   @override
   Future<UserModel> logInWithEmailPassword({
     required String email,
@@ -28,7 +35,9 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     if(response.user == null){
       throw ServerException('User is null');
     }
-    return UserModel.fromJson(response.user!.toJson());
+    return UserModel.fromJson(response.user!.toJson()).copyWith(email: response.user!.email).copyWith(
+      name: (await supabaseClient.from('profiles').select('name').eq('id', response.user!.id).single())['name'] ?? '',
+    );
     }catch(e){
       throw ServerException(e.toString());
     }
@@ -62,7 +71,8 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         throw ServerException('User is null');
        }
        print('✅ [DataSource] User created successfully with ID: ${response.user!.id}');
-       return UserModel.fromJson(response.user!.toJson());
+       return UserModel.fromJson(response.user!.toJson()).copyWith(email: response.user!.email).copyWith(
+        name: (await supabaseClient.from('profiles').select('name').eq('id', response.user!.id).single())['name'] ?? '',)
     }on AuthApiException catch(e){
       print('❌ [DataSource] AuthApiException caught: ${e.message}');
       print('❌ [DataSource] Status Code: ${e.statusCode}');
@@ -79,4 +89,24 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       throw ServerException(e.toString());
     }
   }
+  
+  @override
+  Future<UserModel?> getCurrentUserData() async {
+    try {
+      if(currentUserSession != null){
+        final userData = await supabaseClient.from('profiles').select('id, name').eq('id', currentUserSession!.user.id);
+
+        return UserModel.fromJson(userData.first).copyWith(
+          email: currentUserSession!.user.email
+        ); 
+      }
+      
+      return null;
+    }catch(e){
+      throw ServerException(e.toString());
+    }
+    
+  }
+  
+  
 }
