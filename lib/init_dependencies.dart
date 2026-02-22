@@ -10,6 +10,7 @@ import 'package:blog_app/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:blog_app/features/blog/data/datasources/blog_remote_data_source.dart';
 import 'package:blog_app/features/blog/data/repositories/blog_repository_impl.dart';
 import 'package:blog_app/features/blog/domain/entities/repositories/blog_repository.dart';
+import 'package:blog_app/features/blog/domain/usecases/get_all_blogs.dart';
 import 'package:blog_app/features/blog/domain/usecases/upload_blog.dart';
 import 'package:blog_app/features/blog/presentation/bloc/blog_bloc.dart';
 import 'package:get_it/get_it.dart';
@@ -48,25 +49,29 @@ void _initAuth() {
         userSignUp: serviceLocator<UserSignUp>(),
         userLogin: serviceLocator<UserLogin>(),
         currentUser: serviceLocator<CurrentUser>(),
-      appUserCubit: serviceLocator<AppUserCubit>(),
+        appUserCubit: serviceLocator<AppUserCubit>(),
       ),
     );
 }
 
 void _initBlog() {
   serviceLocator
-  // Data sources
+    // Data sources
     ..registerFactory<BlogRemoteDataSource>(
       () => BlogRemoteDataSourceImpl(serviceLocator<SupabaseClient>()),
     )
-
     // Repositories
     ..registerFactory<BlogRepository>(
       () => BlogRepositoryImpl(serviceLocator<BlogRemoteDataSource>()),
     )
     // Use cases
     ..registerFactory(() => UploadBlog(serviceLocator<BlogRepository>()))
-
+    ..registerFactory(() => GetAllBlogs(serviceLocator<BlogRepository>()))
     // Blocs
-    ..registerLazySingleton(() => BlogBloc(serviceLocator<UploadBlog>()));
+    ..registerLazySingleton(
+      () => BlogBloc(
+        uploadBlog: serviceLocator<UploadBlog>(),
+        getAllBlogs: serviceLocator<GetAllBlogs>(),
+      ),
+    );
 }
