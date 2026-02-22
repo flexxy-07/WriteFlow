@@ -20,7 +20,10 @@ class AppTheme {
     ),
     inputDecorationTheme: InputDecorationTheme(
       contentPadding: const EdgeInsets.all(24),
+      border: _border(),
       enabledBorder: _border()  ,
+      errorBorder: _border(AppPallete.errorColor) ,
       focusedBorder: _border(AppPallete.gradient2 )),
+      
   );
 }

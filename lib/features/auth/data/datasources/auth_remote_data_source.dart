@@ -35,8 +35,10 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     if(response.user == null){
       throw ServerException('User is null');
     }
-    return UserModel.fromJson(response.user!.toJson()).copyWith(email: response.user!.email).copyWith(
-      name: (await supabaseClient.from('profiles').select('name').eq('id', response.user!.id).single())['name'] ?? '',
+    return UserModel(
+      id: response.user!.id,
+      email: response.user!.email ?? '',
+      name: response.user!.userMetadata?['name'] ?? '',
     );
     }catch(e){
       throw ServerException(e.toString());
@@ -63,8 +65,11 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         throw ServerException('User is null');
        }
       
-       return UserModel.fromJson(response.user!.toJson()).copyWith(email: response.user!.email).copyWith(
-        name: (await supabaseClient.from('profiles').select('name').eq('id', response.user!.id).single())['name'] ?? '',);
+       return UserModel(
+         id: response.user!.id,
+         email: response.user!.email ?? '',
+         name: response.user!.userMetadata?['name'] ?? '',
+       );
     }catch(e){
       throw ServerException(e.toString());
     }
@@ -74,11 +79,11 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   Future<UserModel?> getCurrentUserData() async {
     try {
       if(currentUserSession != null){
-        final userData = await supabaseClient.from('profiles').select('id, name').eq('id', currentUserSession!.user.id);
-
-        return UserModel.fromJson(userData.first).copyWith(
-          email: currentUserSession!.user.email
-        ); 
+        return UserModel(
+          id: currentUserSession!.user.id,
+          email: currentUserSession!.user.email ?? '',
+          name: currentUserSession!.user.userMetadata?['name'] ?? '',
+        );
       }
       
       return null;
