@@ -39,7 +39,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     final res = await _currentUser(NoParams());
     res.fold(
       (failure) {
-        emit(AuthFailure(message: failure.message));
+        // Don't emit failure for not being logged in, just emit initial state
+        emit(AuthInitial());
       },
       (user) {
         _emitAuthSuccess(user, emit);

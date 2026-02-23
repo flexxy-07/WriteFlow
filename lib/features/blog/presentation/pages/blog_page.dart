@@ -3,6 +3,7 @@ import 'package:blog_app/core/common/widgets/loader.dart';
 import 'package:blog_app/features/blog/domain/entities/blog.dart';
 import 'package:blog_app/features/blog/presentation/bloc/blog_bloc.dart';
 import 'package:blog_app/features/blog/presentation/pages/add_new_blog.dart';
+import 'package:blog_app/features/blog/presentation/widgets/blog_card.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -49,7 +50,7 @@ class _BlogPageState extends State<BlogPage> {
           if(state is BlogDisplaySuccess){
             return ListView.builder(itemCount:  state.blogs.length,itemBuilder: (context, index){
               final blog = state.blogs[index];
-              return Text(blog.title);
+              return BlogCard(blog: blog);
           });
           }
           return SizedBox();

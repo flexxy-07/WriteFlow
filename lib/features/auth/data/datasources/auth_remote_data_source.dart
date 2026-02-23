@@ -16,6 +16,8 @@ abstract interface class AuthRemoteDataSource {
   });
 
   Future<UserModel?> getCurrentUserData();
+  
+  Future<void> signOut();
 }
 
 class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
@@ -31,16 +33,24 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     required String password,
   }) async {
     try {
-      final response = await supabaseClient.auth.signInWithPassword(password: password, email: email);
-    if(response.user == null){
-      throw ServerException('User is null');
-    }
-    return UserModel(
-      id: response.user!.id,
-      email: response.user!.email ?? '',
-      name: response.user!.userMetadata?['name'] ?? '',
-    );
-    }catch(e){
+      final response = await supabaseClient.auth.signInWithPassword(
+        password: password, 
+        email: email,
+      );
+      
+      if(response.user == null){
+        throw ServerException('User is null');
+      }
+      
+      return UserModel(
+        id: response.user!.id,
+        email: response.user!.email ?? '',
+        name: response.user!.userMetadata?['name'] ?? '',
+      );
+    } on AuthException {
+      // Let AuthException bubble up to be handled by repository
+      rethrow;
+    } catch(e){
       throw ServerException(e.toString());
     }
   }
@@ -52,25 +62,27 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     required String password,
   }) async {
     try {
-       final response = await supabaseClient.auth.signUp(
-         email: email,
-         password: password,
-         data: {
+      final response = await supabaseClient.auth.signUp(
+        email: email,
+        password: password,
+        data: {
           'name' : name
-         }
-       );
+        }
+      );
        
-       if(response.user == null){
-        
+      if(response.user == null){
         throw ServerException('User is null');
-       }
+      }
       
-       return UserModel(
-         id: response.user!.id,
-         email: response.user!.email ?? '',
-         name: response.user!.userMetadata?['name'] ?? '',
-       );
-    }catch(e){
+      return UserModel(
+        id: response.user!.id,
+        email: response.user!.email ?? '',
+        name: response.user!.userMetadata?['name'] ?? '',
+      );
+    } on AuthException {
+      // Let AuthException bubble up to be handled by repository
+      rethrow;
+    } catch(e){
       throw ServerException(e.toString());
     }
   }
@@ -90,8 +102,14 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     }catch(e){
       throw ServerException(e.toString());
     }
-    
   }
   
-  
+  @override
+  Future<void> signOut() async {
+    try {
+      await supabaseClient.auth.signOut();
+    } catch(e) {
+      throw ServerException(e.toString());
+    }
+  }
 }
