@@ -27,7 +27,7 @@ class BlogRepositoryImpl implements BlogRepository {
       content: content,
       imageUrl: '',
       posterId: posterId,
-      updatedAt: DateTime.now(),
+      updatedAt: DateTime.now().toUtc(),
       topics: topics,
     );
     final imageUrl = await blogRemoteDataSource.uploadBlogImage(image: image, blog: blogModel);
@@ -52,8 +52,19 @@ class BlogRepositoryImpl implements BlogRepository {
       return right(blogs); 
     }on ServerException catch(e){
       return left(Failure(e.message));
-    
+    }
   }
 
+  @override
+  Future<Either<Failure, void>> deleteBlog({
+    required String blogId,
+    required String userId,
+  }) async {
+    try {
+      await blogRemoteDataSource.deleteBlog(blogId: blogId, userId: userId);
+      return right(null);
+    } on ServerException catch (e) {
+      return left(Failure(e.message));
+    }
   }
 }

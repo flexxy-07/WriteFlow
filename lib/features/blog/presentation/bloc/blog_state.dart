@@ -14,6 +14,6 @@ final class BlogDisplaySuccess extends BlogState {
   BlogDisplaySuccess({required this.blogs});
 }
 
-final class BlogUploadSuccess extends BlogState {
-  
-}
+final class BlogUploadSuccess extends BlogState {}
+
+final class BlogDeleteSuccess extends BlogState {}

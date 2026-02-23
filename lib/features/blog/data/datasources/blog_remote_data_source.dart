@@ -11,6 +11,10 @@ abstract interface class BlogRemoteDataSource {
     required BlogModel blog,
   });
   Future<List<BlogModel>> getAllBlogs();
+  Future<void> deleteBlog({
+    required String blogId,
+    required String userId,
+  });
 }
 
 class BlogRemoteDataSourceImpl implements BlogRemoteDataSource {
@@ -56,6 +60,33 @@ class BlogRemoteDataSourceImpl implements BlogRemoteDataSource {
             ).copyWith(posterName: blog['profiles']['name']),
           )
           .toList();
+    } catch (e) {
+      throw ServerException(e.toString());
+    }
+  }
+
+  @override
+  Future<void> deleteBlog({
+    required String blogId,
+    required String userId,
+  }) async {
+    try {
+      // First verify the user owns this blog
+      final blog = await supabaseClient
+          .from('blogs')
+          .select('poster_id')
+          .eq('id', blogId)
+          .single();
+
+      if (blog['poster_id'] != userId) {
+        throw ServerException('You do not have permission to delete this blog');
+      }
+
+      // Delete the blog image from storage
+      await supabaseClient.storage.from('blogs_images').remove([blogId]);
+
+      // Delete the blog from database
+      await supabaseClient.from('blogs').delete().eq('id', blogId);
     } catch (e) {
       throw ServerException(e.toString());
     }

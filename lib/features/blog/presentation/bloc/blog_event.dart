@@ -18,6 +18,14 @@ final class UploadBlogEvent extends BlogEvent {
   });
 }
 
-final class BlogFetchAllBlogs extends BlogEvent {
+final class BlogFetchAllBlogs extends BlogEvent {}
 
+final class DeleteBlogEvent extends BlogEvent {
+  final String blogId;
+  final String userId;
+
+  DeleteBlogEvent({
+    required this.blogId,
+    required this.userId,
+  });
 }
