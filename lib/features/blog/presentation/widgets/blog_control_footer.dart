@@ -94,7 +94,7 @@ class BlogControlFooter extends StatelessWidget {
         ),
         child: Icon(
           Icons.filter_list_rounded,
-          color: AppPallete.whiteColor,
+          color: const Color(0xFF00D9FF),
           size: 24,
         ),
       ),
@@ -111,17 +111,20 @@ class BlogControlFooter extends StatelessWidget {
           width: 1,
         ),
       ),
-      padding: const EdgeInsets.all(4),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
       child: Row(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          _buildToggleButton(
+          _buildToggleButtonSmooth(
             icon: Icons.view_agenda_outlined,
+            name: 'List',
             isSelected: viewMode == ViewMode.vertical,
             onTap: viewMode == ViewMode.horizontal ? onViewModeToggle : null,
           ),
-          const SizedBox(width: 4),
-          _buildToggleButton(
+          const SizedBox(width: 12),
+          _buildToggleButtonSmooth(
             icon: Icons.view_carousel_outlined,
+            name: 'Grid',
             isSelected: viewMode == ViewMode.horizontal,
             onTap: viewMode == ViewMode.vertical ? onViewModeToggle : null,
           ),
@@ -130,8 +133,9 @@ class BlogControlFooter extends StatelessWidget {
     );
   }
 
-  Widget _buildToggleButton({
+  Widget _buildToggleButtonSmooth({
     required IconData icon,
+    required String name,
     required bool isSelected,
     required VoidCallback? onTap,
   }) {
@@ -139,9 +143,12 @@ class BlogControlFooter extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(20),
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        curve: Curves.easeInOut,
-        padding: const EdgeInsets.all(10),
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.fastOutSlowIn,
+        padding: EdgeInsets.symmetric(
+          horizontal: isSelected ? 16 : 12,
+          vertical: 10,
+        ),
         decoration: BoxDecoration(
           color: isSelected
               ? const Color(0xFF00D9FF)
@@ -157,12 +164,35 @@ class BlogControlFooter extends StatelessWidget {
                 ]
               : null,
         ),
-        child: Icon(
-          icon,
-          color: isSelected
-              ? const Color(0xFF1F2937)
-              : AppPallete.whiteColor.withOpacity(0.5),
-          size: 22,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon,
+              color: isSelected
+                  ? const Color(0xFF1F2937)
+                  : AppPallete.whiteColor.withOpacity(0.5),
+              size: 18,
+            ),
+            AnimatedCrossFade(
+              duration: const Duration(milliseconds: 300),
+              crossFadeState: isSelected
+                  ? CrossFadeState.showSecond
+                  : CrossFadeState.showFirst,
+              firstChild: const SizedBox(width: 0),
+              secondChild: Padding(
+                padding: const EdgeInsets.only(left: 6),
+                child: Text(
+                  name,
+                  style: TextStyle(
+                    color: const Color(0xFF1F2937),
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
